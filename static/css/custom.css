@@ -1,0 +1,252 @@
+/* static/css/custom.css */
+/* 亮色模式变量 */
+:root {
+    --custom-bg-subtle: #f8f9fa;
+    --custom-border-subtle: #dee2e6;
+    --custom-hover-bg: rgba(0, 0, 0, 0.05);
+    --custom-code-bg: #f7f7f9;
+    --custom-shadow: rgba(0, 0, 0, 0.15);
+    --custom-input-focus: rgba(13, 110, 253, 0.25);
+}
+
+/* 暗色模式变量 */
+[data-bs-theme="dark"] {
+    --custom-bg-subtle: #2b3035;
+    --custom-border-subtle: #495057;
+    --custom-hover-bg: rgba(255, 255, 255, 0.05);
+    --custom-code-bg: #2b3035;
+    --custom-shadow: rgba(0, 0, 0, 0.25);
+    --custom-input-focus: rgba(13, 110, 253, 0.5);
+}
+
+/* 自定义样式 */
+.card {
+    box-shadow: 0 0.125rem 0.25rem var(--custom-shadow);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem var(--custom-shadow);
+}
+
+pre, code {
+    background-color: var(--custom-code-bg);
+    border-radius: 0.375rem;
+}
+
+.form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 0.25rem var(--custom-input-focus);
+}
+
+/* 平滑过渡效果 */
+body, .card, .btn, .form-control, .nav-link, .dropdown-menu {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* 表格样式优化 */
+.table-hover tbody tr:hover {
+    background-color: var(--custom-hover-bg);
+}
+
+/* 加载动画 */
+.loading-spinner {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* static/css/custom.css (添加通知相关样式) */
+/* 通知图标样式 */
+.notification-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.notification-icon-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+
+/* 通知下拉菜单样式 */
+.notification-dropdown {
+    width: 320px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* 未读通知样式 */
+.notification-unread {
+    background-color: var(--custom-bg-subtle);
+    font-weight: 500;
+}
+
+/* 通知列表样式 */
+.notification-list .notification-item {
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.notification-list .notification-item:hover {
+    border-left-color: var(--bs-primary);
+}
+
+.notification-list .notification-unread {
+    border-left-color: var(--bs-primary);
+}
+
+/* static/css/custom.css (添加加载指示器样式) */
+/* 页面加载指示器 */
+body {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+body.page-loaded {
+    opacity: 1;
+}
+
+.page-loading-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.7);
+    z-index: 9999;
+    opacity: 0.8;
+    backdrop-filter: blur(2px);
+    transition: all 0.3s ease;
+}
+
+[data-bs-theme="dark"] .page-loading-indicator {
+    background-color: rgba(33, 37, 41, 0.7);
+}
+
+/* static/css/custom.css (添加响应式设计优化) */
+/* 移动端优化 */
+@media (max-width: 768px) {
+    /* 边栏 */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -250px;
+        height: 100vh;
+        width: 250px;
+        z-index: 1030;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar.show {
+        left: 0;
+    }
+
+    .sidebar-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1025;
+        display: none;
+    }
+
+    .sidebar-backdrop.show {
+        display: block;
+    }
+
+    /* 浮动操作按钮 */
+    .mobile-fab {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1020;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* 表格响应式调整 */
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    /* 表单字段响应式调整 */
+    .form-label {
+        font-size: 0.875rem;
+    }
+
+    /* 卡片边距调整 */
+    .card {
+        margin-bottom: 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    /* 标题大小调整 */
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+    }
+
+    /* 导航栏简化 */
+    .navbar-brand span {
+        display: none;
+    }
+
+    /* 通知下拉菜单 */
+    .notification-dropdown {
+        width: 280px;
+    }
+}
+
+/* 平板电脑优化 */
+@media (min-width: 769px) and (max-width: 992px) {
+    .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .card-body {
+        padding: 1.25rem;
+    }
+}  
