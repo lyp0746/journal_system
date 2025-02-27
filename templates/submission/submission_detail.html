@@ -1,0 +1,285 @@
+<!-- templates/submission/submission_detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}稿件详情 - 上海理工大学学报投审稿系统{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2>稿件详情</h2>
+        <div>
+            {% if user == paper.author and paper.status == 'REVISION_REQUIRED' %}
+            <a href="{% url 'paper_revision' paper.id %}" class="btn btn-warning">提交修改</a>
+            {% endif %}
+
+            {% if user == paper.author and paper.status not in 'REJECTED,ACCEPTED,PUBLISHED' %}
+            <a href="{% url 'withdraw_submission' paper.id %}" class="btn btn-danger">撤回稿件</a>
+            {% endif %}
+
+            <a href="{% url 'submission_list' %}" class="btn btn-secondary">返回列表</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h3>{{ paper.title }}</h3>
+                <p class="text-muted">
+                    投稿时间: {{ paper.submitted_at|date:"Y-m-d H:i" }} |
+                    最后更新: {{ paper.last_updated|date:"Y-m-d H:i" }}
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <span class="badge
+                {% if paper.status == 'DRAFT' %}bg-secondary
+                {% elif paper.status == 'SUBMITTED' %}bg-primary
+                {% elif paper.status == 'INITIAL_CHECK' %}bg-info
+                {% elif paper.status == 'UNDER_REVIEW' %}bg-warning
+                {% elif paper.status == 'REVISION_REQUIRED' %}bg-warning
+                {% elif paper.status == 'REJECTED' %}bg-danger
+                {% elif paper.status == 'ACCEPTED' %}bg-success
+                {% elif paper.status == 'PUBLISHED' %}bg-success
+                {% endif %}
+                fs-6">
+                    {{ paper.get_status_display }}
+                </span>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">基本信息</div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">摘要:</div>
+                            <div class="col-md-9">{{ paper.abstract }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">关键词:</div>
+                            <div class="col-md-9">{{ paper.keywords }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">栏目:</div>
+                            <div class="col-md-9">{{ paper.category.name }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">投稿人:</div>
+                            <div class="col-md-9">{{ paper.author.get_full_name }} ({{ paper.author.email }})</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">通讯作者:</div>
+                            <div class="col-md-9">{{ paper.corresponding_author }} ({{ paper.corresponding_email }})</div>
+                        </div>
+                        {% if paper.co_authors %}
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">共同作者:</div>
+                            <div class="col-md-9">{{ paper.co_authors|linebreaks }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">文件</div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">论文文件:</div>
+                            <div class="col-md-9">
+                                <a href="{{ paper.manuscript_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    下载论文 <i class="bi bi-download"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        {% if paper.cover_letter %}
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">投稿信:</div>
+                            <div class="col-md-9">
+                                <a href="{{ paper.cover_letter.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    下载投稿信 <i class="bi bi-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if paper.supplementary_file %}
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">补充材料:</div>
+                            <div class="col-md-9">
+                                <a href="{{ paper.supplementary_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    下载补充材料 <i class="bi bi-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if revisions %}
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">修改历史</div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>版本</th>
+                                        <th>提交时间</th>
+                                        <th>文件</th>
+                                        <th>作者回应</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for revision in revisions %}
+                                    <tr>
+                                        <td>v{{ revision.version }}</td>
+                                        <td>{{ revision.created_at|date:"Y-m-d H:i" }}</td>
+                                        <td>
+                                            <a href="{{ revision.manuscript_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                下载 <i class="bi bi-download"></i>
+                                            </a>
+                                            {% if revision.cover_letter %}
+                                            <a href="{{ revision.cover_letter.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                                修改说明 <i class="bi bi-download"></i>
+                                            </a>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if revision.response_to_reviewers %}
+                                            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#responseModal{{ revision.id }}">
+                                                查看回应
+                                            </button>
+
+                                            <!-- 回应详情模态框 -->
+                                            <div class="modal fade" id="responseModal{{ revision.id }}" tabindex="-1" aria-labelledby="responseModalLabel{{ revision.id }}" aria-hidden="true">
+                                                <div class="modal-dialog modal-lg">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="responseModalLabel{{ revision.id }}">作者对审稿意见的回应 (v{{ revision.version }})</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <pre class="p-3 bg-light">{{ revision.response_to_reviewers }}</pre>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% else %}
+                                            <span class="text-muted">无</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if reviews %}
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">审稿意见</div>
+                    <div class="card-body">
+                        {% for review in reviews %}
+                        <div class="card mb-3">
+                            <div class="card-header d-flex justify-content-between">
+                                <div>
+                                    审稿人 {{ forloop.counter }}
+                                    {% if review.reviewer.expertise %}
+                                    <span class="badge bg-info">{{ review.reviewer.expertise }}</span>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    提交时间: {{ review.submitted_at|date:"Y-m-d" }}
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-2">
+                                    <div class="col-md-3 fw-bold">推荐决定:</div>
+                                    <div class="col-md-9">
+                                        <span class="badge
+                                        {% if review.recommendation == 'ACCEPT' %}bg-success
+                                        {% elif review.recommendation == 'MINOR_REVISION' %}bg-info
+                                        {% elif review.recommendation == 'MAJOR_REVISION' %}bg-warning
+                                        {% elif review.recommendation == 'REJECT' %}bg-danger
+                                        {% else %}bg-secondary
+                                        {% endif %}">
+                                            {{ review.get_recommendation_display }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-2">
+                                    <div class="col-md-3 fw-bold">给作者的评语:</div>
+                                    <div class="col-md-9">
+                                        <pre class="p-3 bg-light">{{ review.comments_to_author }}</pre>
+                                    </div>
+                                </div>
+
+                                {% if user.role == 'EDITOR' or user.is_staff %}
+                                <div class="row mb-2">
+                                    <div class="col-md-3 fw-bold">给编辑的评语:</div>
+                                    <div class="col-md-9">
+                                        <pre class="p-3 bg-light">{{ review.comments_to_editor }}</pre>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <div class="row">
+                                    <div class="col-md-3 fw-bold">评分:</div>
+                                    <div class="col-md-9">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <p>创新性: {{ review.score_originality }}/5</p>
+                                                <p>方法学: {{ review.score_methodology }}/5</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p>写作与表达: {{ review.score_writing }}/5</p>
+                                                <p>文献引用: {{ review.score_literature }}/5</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if user.role == 'EDITOR' or user.is_staff %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">编辑操作</div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2 d-md-flex">
+                            <a href="{% url 'assign_reviewers' paper.id %}" class="btn btn-primary">分配审稿人</a>
+                            <a href="{% url 'editor_decision' paper.id %}" class="btn btn-success">编辑决定</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

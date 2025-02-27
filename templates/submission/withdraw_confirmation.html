@@ -1,0 +1,36 @@
+<!-- templates/submission/withdraw_confirmation.html -->
+{% extends 'base.html' %}
+
+{% block title %}撤回稿件确认 - 上海理工大学学报投审稿系统{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2>撤回稿件确认</h2>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning mb-4">
+                    <h5>您确定要撤回以下稿件吗？</h5>
+                    <p><strong>标题:</strong> {{ paper.title }}</p>
+                    <p><strong>投稿时间:</strong> {{ paper.submitted_at|date:"Y-m-d H:i" }}</p>
+                    <p><strong>当前状态:</strong> {{ paper.get_status_display }}</p>
+                </div>
+
+                <div class="alert alert-danger">
+                    <p><strong>请注意：</strong> 撤回稿件后，审阅过程将被终止。如果您想重新提交，需要重新开始投稿流程。</p>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'submission_detail' paper.id %}" class="btn btn-secondary me-md-2">取消</a>
+                        <button type="submit" class="btn btn-danger">确认撤回</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+<!-- templates/home.html -->
+{% extends 'base.html' %}
+
+{% block title %}首页 - 上海理工大学学报投审稿系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title">欢迎使用上海理工大学学报投审稿系统</h2>
+                <p class="card-text">
+                    《上海理工大学学报》（Journal of University of Shanghai for Science and Technology）是上海理工大学主办的综合性学术期刊，
+                    主要刊登机械工程、动力工程、光电信息与材料科学、管理科学等学科领域的基础研究和应用研究方面具有创新性的科研成果。
+                </p>
+                {% if not user.is_authenticated %}
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                    <a href="{% url 'login' %}" class="btn btn-primary me-md-2">登录</a>
+                    <a href="{% url 'register' %}" class="btn btn-outline-secondary">注册</a>
+                </div>
+                {% endif %}
+                <!-- 在管理员导航菜单中添加 -->
+                {% if user.is_staff %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-gear me-1"></i>系统管理
+                    </a>
+                    <ul class="dropdown-menu">
+                    <!-- 现有菜单项 -->
+                    <li><a class="dropdown-item" href="{% url 'manage_test_accounts' %}">测试管理</a></li>
+                    </ul>
+                </li>
+{% endif %}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>期刊介绍</h3>
+            </div>
+            <div class="card-body">
+                <p>《上海理工大学学报》创刊于1979年，是由上海理工大学主办的自然科学学术期刊。期刊主要刊登机械工程、动力工程、光电信息与材料科学、管理科学等学科领域的基础研究和应用研究方面具有创新性的科研成果。</p>
+                <p>本刊为中国科技核心期刊，RCCSE中国核心学术期刊，中国学术期刊综合评价数据库来源期刊，中国科技论文统计源期刊，被美国《化学文摘》（CA）、《剑桥科学文摘》（CSA）等国际著名检索系统收录。</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>最新公告</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <h5>征稿启事</h5>
+                        <p class="text-muted">2025年02月27日</p>
+                        <p>本刊常年征集机械工程、动力工程、光电信息与材料科学等学科领域的高质量稿件。</p>
+                    </li>
+                    <li class="list-group-item">
+                        <h5>期刊最新一期已出版</h5>
+                        <p class="text-muted">2025年02月15日</p>
+                        <p>《上海理工大学学报》2025年第1期已出版。</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4>期刊指南</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><a href="#" class="text-decoration-none">投稿须知</a></li>
+                    <li class="list-group-item"><a href="#" class="text-decoration-none">论文模板下载</a></li>
+                    <li class="list-group-item"><a href="#" class="text-decoration-none">审稿流程</a></li>
+                    <li class="list-group-item"><a href="#" class="text-decoration-none">联系我们</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

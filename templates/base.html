@@ -1,0 +1,296 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}上海理工大学学报投审稿系统{% endblock %}</title>
+
+    <!-- CSS 依赖 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/css/shepherd.css">
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+
+    <style>
+        .navbar-brand img { height: 40px; margin-right: 10px; }
+        .footer { margin-top: 2rem; padding: 2rem 0; background-color: #f8f9fa; }
+        .notification-icon-sm {
+            display: inline-flex;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+        }
+        .shepherd-theme-custom {
+            --shepherd-bg: var(--bs-body-bg);
+            --shepherd-text: var(--bs-body-color);
+            --shepherd-border: var(--bs-border-color);
+        }
+        .shepherd-has-title .shepherd-content .shepherd-header {
+            background: var(--bs-primary);
+            color: white;
+        }
+        .shepherd-button {
+            background: var(--bs-primary);
+        }
+        .shepherd-button:hover {
+            background: var(--bs-primary-dark);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body {% if user.is_authenticated %}data-user-type="{{ user.role }}"{% endif %}>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                上海理工大学学报投审稿系统
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- 左侧导航项 -->
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">首页</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                        {% if user.role == 'AUTHOR' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">我的投稿</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">新投稿</a>
+                        </li>
+                        {% elif user.role == 'REVIEWER' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">我的审稿任务</a>
+                        </li>
+                        {% elif user.role == 'EDITOR' or user.is_staff %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.view_name == 'editor_dashboard' %}active{% endif %}"
+                               href="{% url 'editor_dashboard' %}">编辑仪表板</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.view_name == 'statistics_dashboard' %}active{% endif %}"
+                               href="{% url 'statistics_dashboard' %}">统计报表</a>
+                        </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+
+                <!-- 右侧导航项 -->
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <!-- 主题切换 -->
+                    <li class="nav-item me-2">
+                        <button id="theme-toggle" class="btn btn-outline-secondary btn-sm" title="切换主题">
+                            <i id="theme-icon" class="bi bi-moon"></i>
+                        </button>
+                    </li>
+
+                    <!-- 通知中心 -->
+                    {% if user.is_authenticated %}
+                    <li class="nav-item dropdown me-2">
+                        <a class="nav-link position-relative" href="#"
+                           id="notificationDropdown"
+                           role="button"
+                           data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                            <i class="bi bi-bell"></i>
+                            <span id="notification-badge"
+                                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                  style="display: none;">0</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end notification-dropdown"
+                             aria-labelledby="notificationDropdown">
+                            <div class="dropdown-header d-flex justify-content-between align-items-center">
+                                <span>通知中心</span>
+                                <a href="{% url 'notification_list' %}"
+                                   class="text-decoration-none small">查看全部</a>
+                            </div>
+                            <div id="notification-container">
+                                <div class="text-center text-muted my-3">
+                                    <small>正在加载通知...</small>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    {% endif %}
+
+                    <!-- 用户菜单 -->
+                    {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#"
+                           id="navbarDropdown"
+                           role="button"
+                           data-bs-toggle="dropdown">
+                            {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'profile' %}">个人资料</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <button id="reset-guide-btn" class="dropdown-item">
+                                    <i class="bi bi-question-circle me-2"></i>重置引导
+                                </button>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">退出登录</a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">登录</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'register' %}">注册</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 消息提示 -->
+    <div class="container mt-3">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- 主要内容 -->
+    <main class="container mt-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>上海理工大学学报</h5>
+                    <p>地址：上海市军工路516号</p>
+                    <p>电话：021-XXXXXXXX</p>
+                    <p>邮箱：journal@usst.edu.cn</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p>&copy; {% now "Y" %} 上海理工大学学报. 版权所有.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript 依赖 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+
+    <!-- 通知系统脚本 -->
+    {% if user.is_authenticated %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fetchNotifications = () => {
+            fetch('{% url "get_unread_notifications" %}', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    updateNotificationBadge(data.unread_count);
+                    renderNotifications(data.notifications);
+                }
+            })
+            .catch(console.error);
+        };
+
+        const updateNotificationBadge = (count) => {
+            const badge = document.getElementById('notification-badge');
+            if (!badge) return;
+            badge.textContent = count > 99 ? '99+' : count;
+            badge.style.display = count > 0 ? 'block' : 'none';
+        };
+
+        const renderNotifications = (notifications) => {
+            const container = document.getElementById('notification-container');
+            if (!container) return;
+
+            container.innerHTML = notifications.length ?
+                notifications.map(notification => `
+                    <a href="${notification.link || '#'}"
+                       class="dropdown-item d-flex align-items-center py-2"
+                       data-notification-id="${notification.id}">
+                        <div class="flex-shrink-0 me-2">
+                            <span class="notification-icon-sm ${getNotificationStyle(notification.type).bg}">
+                                <i class="bi ${getNotificationStyle(notification.type).icon}"></i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="small">${notification.message}</div>
+                            <div class="text-muted small">${notification.created_at}</div>
+                        </div>
+                    </a>
+                `).join('') :
+                `<div class="text-center text-muted my-3"><small>暂无新通知</small></div>`;
+
+            document.querySelectorAll('.dropdown-item[data-notification-id]').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    markAsRead(this.dataset.notificationId, this.href);
+                });
+            });
+        };
+
+        const getNotificationStyle = (type) => {
+            const styles = {
+                'SUCCESS': { icon: 'bi-check-circle', bg: 'bg-success' },
+                'WARNING': { icon: 'bi-exclamation-triangle', bg: 'bg-warning' },
+                'ERROR': { icon: 'bi-x-circle', bg: 'bg-danger' },
+                'default': { icon: 'bi-info-circle', bg: 'bg-info' }
+            };
+            return styles[type] || styles.default;
+        };
+
+        const markAsRead = (id, redirectUrl) => {
+            fetch(`/notifications/${id}/mark-read/`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            }).then(() => {
+                if (redirectUrl) window.location.href = redirectUrl;
+                fetchNotifications();
+            });
+        };
+
+        fetchNotifications();
+        setInterval(fetchNotifications, 60000);
+    });
+    </script>
+    {% endif %}
+
+    <!-- 引导系统依赖 -->
+    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@10.0.1/dist/js/shepherd.min.js"></script>
+    <script src="{% static 'js/user-guide.js' %}"></script>
+
+    <!-- 其他脚本 -->
+    <script src="{% static 'js/theme-switcher.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script src="{% static 'js/form-enhancements.js' %}"></script>
+    <script src="{% static 'js/loading-indicator.js' %}"></script>
+    <script src="{% static 'js/mobile-enhancements.js' %}"></script>
+</body>
+</html>

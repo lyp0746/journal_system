@@ -1,0 +1,177 @@
+<!-- templates/submission/submit_paper.html -->
+{% extends 'base.html' %}
+
+{% block title %}新投稿 - 上海理工大学学报投审稿系统{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <h2>论文投稿</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">论文标题</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                        <div class="text-danger">
+                            {% for error in form.title.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.abstract.id_for_label }}" class="form-label">摘要</label>
+                        {{ form.abstract }}
+                        {% if form.abstract.errors %}
+                        <div class="text-danger">
+                            {% for error in form.abstract.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.keywords.id_for_label }}" class="form-label">关键词</label>
+                            {{ form.keywords }}
+                            {% if form.keywords.errors %}
+                            <div class="text-danger">
+                                {% for error in form.keywords.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if form.keywords.help_text %}
+                            <div class="form-text">{{ form.keywords.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">所属栏目</label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                            <div class="text-danger">
+                                {% for error in form.category.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.co_authors.id_for_label }}" class="form-label">共同作者</label>
+                        {{ form.co_authors }}
+                        {% if form.co_authors.errors %}
+                        <div class="text-danger">
+                            {% for error in form.co_authors.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% if form.co_authors.help_text %}
+                        <div class="form-text">{{ form.co_authors.help_text }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.corresponding_author.id_for_label }}" class="form-label">通讯作者</label>
+                            {{ form.corresponding_author }}
+                            {% if form.corresponding_author.errors %}
+                            <div class="text-danger">
+                                {% for error in form.corresponding_author.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ form.corresponding_email.id_for_label }}" class="form-label">通讯作者邮箱</label>
+                            {{ form.corresponding_email }}
+                            {% if form.corresponding_email.errors %}
+                            <div class="text-danger">
+                                {% for error in form.corresponding_email.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.manuscript_file.id_for_label }}" class="form-label">论文文件</label>
+                        {{ form.manuscript_file }}
+                        {% if form.manuscript_file.errors %}
+                        <div class="text-danger">
+                            {% for error in form.manuscript_file.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% if form.manuscript_file.help_text %}
+                        <div class="form-text">{{ form.manuscript_file.help_text }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.cover_letter.id_for_label }}" class="form-label">投稿信</label>
+                            {{ form.cover_letter }}
+                            {% if form.cover_letter.errors %}
+                            <div class="text-danger">
+                                {% for error in form.cover_letter.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if form.cover_letter.help_text %}
+                            <div class="form-text">{{ form.cover_letter.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ form.supplementary_file.id_for_label }}" class="form-label">补充材料</label>
+                            {{ form.supplementary_file }}
+                            {% if form.supplementary_file.errors %}
+                            <div class="text-danger">
+                                {% for error in form.supplementary_file.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if form.supplementary_file.help_text %}
+                            <div class="form-text">{{ form.supplementary_file.help_text }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h5>投稿须知：</h5>
+                        <ol>
+                            <li>请确保您的论文格式符合期刊要求</li>
+                            <li>请提供完整准确的作者信息</li>
+                            <li>投稿前请仔细检查论文内容</li>
+                            <li>提交后编辑部将进行初步审核，通过后将安排同行评议</li>
+                        </ol>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'home' %}" class="btn btn-secondary me-md-2">取消</a>
+                        <button type="submit" class="btn btn-primary">提交论文</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

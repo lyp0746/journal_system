@@ -1,0 +1,294 @@
+<!-- templates/testing/test_report.html -->
+{% extends 'base.html' %}
+
+{% block title %}测试报告 - 上海理工大学学报投审稿系统{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-3">
+            <!-- 侧边栏 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">测试管理</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'manage_test_accounts' %}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-people me-2"></i>测试账户管理
+                        </a>
+                        <a href="{% url 'view_test_feedbacks' %}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-chat-square-text me-2"></i>测试反馈
+                        </a>
+                        <a href="{% url 'test_analytics_dashboard' %}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-bar-chart me-2"></i>测试分析
+                        </a>
+                        <a href="{% url 'generate_test_report' %}" class="list-group-item list-group-item-action active">
+                            <i class="bi bi-file-earmark-text me-2"></i>生成报告
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">系统测试报告</h4>
+                    <button class="btn btn-primary btn-sm" onclick="window.print()">
+                        <i class="bi bi-printer me-1"></i> 打印报告
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="report-header mb-4">
+                        <div class="text-center mb-4">
+                            <h2 class="mb-1">上海理工大学学报投审稿系统</h2>
+                            <h3 class="mb-3">用户测试报告</h3>
+                            <p class="text-muted">报告生成时间: {{ generation_time|date:"Y-m-d H:i" }}</p>
+                        </div>
+                    </div>
+
+                    <div class="report-section mb-4">
+                        <h4 class="border-bottom pb-2 mb-3">1. 测试概述</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <th>创建的测试账户总数</th>
+                                            <td>{{ total_users }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>当前活跃测试账户</th>
+                                            <td>{{ active_users }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>总测试会话</th>
+                                            <td>{{ total_sessions }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>已完成测试会话</th>
+                                            <td>{{ completed_sessions }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>测试完成率</th>
+                                            <td>{{ completion_rate|floatformat:1 }}%</td>
+                                        </tr>
+                                        <tr>
+                                            <th>收到的反馈数</th>
+                                            <td>{{ feedback_count }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-section mb-4">
+                        <h4 class="border-bottom pb-2 mb-3">2. 用户反馈分析</h4>
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <h5>2.1 满意度评分</h5>
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>评分指标</th>
+                                            <th>平均分数 (满分5分)</th>
+                                            <th>评价</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>总体满意度</td>
+                                            <td>{{ feedback_stats.avg_satisfaction|floatformat:1 }}</td>
+                                            <td>
+                                                {% if feedback_stats.avg_satisfaction >= 4.5 %}
+                                                    非常好
+                                                {% elif feedback_stats.avg_satisfaction >= 4.0 %}
+                                                    良好
+                                                {% elif feedback_stats.avg_satisfaction >= 3.0 %}
+                                                    一般
+                                                {% else %}
+                                                    需要改进
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>界面设计</td>
+                                            <td>{{ feedback_stats.avg_ui|floatformat:1 }}</td>
+                                            <td>
+                                                {% if feedback_stats.avg_ui >= 4.5 %}
+                                                    非常好
+                                                {% elif feedback_stats.avg_ui >= 4.0 %}
+                                                    良好
+                                                {% elif feedback_stats.avg_ui >= 3.0 %}
+                                                    一般
+                                                {% else %}
+                                                    需要改进
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>易用性</td>
+                                            <td>{{ feedback_stats.avg_usability|floatformat:1 }}</td>
+                                            <td>
+                                                {% if feedback_stats.avg_usability >= 4.5 %}
+                                                    非常好
+                                                {% elif feedback_stats.avg_usability >= 4.0 %}
+                                                    良好
+                                                {% elif feedback_stats.avg_usability >= 3.0 %}
+                                                    一般
+                                                {% else %}
+                                                    需要改进
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>系统性能</td>
+                                            <td>{{ feedback_stats.avg_performance|floatformat:1 }}</td>
+                                            <td>
+                                                {% if feedback_stats.avg_performance >= 4.5 %}
+                                                    非常好
+                                                {% elif feedback_stats.avg_performance >= 4.0 %}
+                                                    良好
+                                                {% elif feedback_stats.avg_performance >= 3.0 %}
+                                                    一般
+                                                {% else %}
+                                                    需要改进
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h5>2.2 最新用户反馈</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>测试场景</th>
+                                                <th>评论</th>
+                                                <th>问题</th>
+                                                <th>建议</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for feedback in recent_feedbacks %}
+                                                <tr>
+                                                    <td>{{ feedback.test_session.scenario.name }}</td>
+                                                    <td>{{ feedback.comments|truncatechars:100|default:"(无)" }}</td>
+                                                    <td>{{ feedback.encountered_issues|truncatechars:100|default:"(无)" }}</td>
+                                                    <td>{{ feedback.suggestions|truncatechars:100|default:"(无)" }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-section mb-4">
+                        <h4 class="border-bottom pb-2 mb-3">3. 测试场景分析</h4>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>测试场景</th>
+                                        <th>测试次数</th>
+                                        <th>完成次数</th>
+                                        <th>完成率</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for scenario in scenario_stats %}
+                                        <tr>
+                                            <td>{{ scenario.name }}</td>
+                                            <td>{{ scenario.session_count }}</td>
+                                            <td>{{ scenario.completion_count }}</td>
+                                            <td>
+                                                {% if scenario.session_count > 0 %}
+                                                    {{ scenario.completion_count|floatformat:0 }}%
+                                                {% else %}
+                                                    0%
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="report-section">
+                        <h4 class="border-bottom pb-2 mb-3">4. 结论与建议</h4>
+                        <div class="conclusion">
+                            <p>根据测试数据分析，以下是系统评估结论与改进建议：</p>
+                            <ul>
+                                {% if feedback_stats.avg_satisfaction >= 4.0 %}
+                                    <li>系统整体用户满意度良好，用户体验较好。</li>
+                                {% else %}
+                                    <li>系统整体用户满意度有待提高，需关注用户体验改进。</li>
+                                {% endif %}
+
+                                {% if feedback_stats.avg_ui < 4.0 %}
+                                    <li>界面设计需要改进，可考虑更直观、简洁的界面布局。</li>
+                                {% endif %}
+
+                                {% if feedback_stats.avg_usability < 4.0 %}
+                                    <li>系统易用性需要提升，建议简化操作流程，优化用户引导。</li>
+                                {% endif %}
+
+                                {% if feedback_stats.avg_performance < 4.0 %}
+                                    <li>系统性能需要优化，加快响应速度，提高稳定性。</li>
+                                {% endif %}
+
+                                {% if completion_rate < 70 %}
+                                    <li>测试完成率偏低，建议优化测试流程，提高测试参与度。</li>
+                                {% endif %}
+                            </ul>
+                            <p>下一步计划：</p>
+                            <ol>
+                                <li>结合用户反馈，进行系统功能优化与界面改进</li>
+                                <li>持续收集用户测试数据，定期分析评估系统使用情况</li>
+                                <li>根据测试场景完成率，优化难度较高的测试场景</li>
+                                <li>加强系统性能优化，提高响应速度与稳定性</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    @media print {
+        /* 打印样式 */
+        .container {
+            width: 100%;
+            max-width: 100%;
+        }
+        .card {
+            border: none;
+        }
+        .card-header, .card-footer {
+            background-color: white !important;
+        }
+        .col-md-3, .btn, .list-group {
+            display: none !important;
+        }
+        .col-md-9 {
+            width: 100% !important;
+            flex: 0 0 100% !important;
+            max-width: 100% !important;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,69 @@
+<!-- templates/testing/test_step.html -->
+{% extends 'base.html' %}
+
+{% block title %}测试步骤 - {{ step.title }} - 上海理工大学学报投审稿系统{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'test_dashboard' %}">测试仪表板</a></li>
+                    <li class="breadcrumb-item active">{{ session.scenario.name }}</li>
+                </ol>
+            </nav>
+
+            <div class="progress mb-4">
+                <div class="progress-bar" role="progressbar" style="width: {{ progress }}%">
+                    步骤 {{ step_number }}/{{ total_steps }}
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">{{ step.title }}</h4>
+                </div>
+                <div class="card-body">
+                    <h5>步骤说明:</h5>
+                    <div class="mb-4">
+                        {{ step.description|linebreaks }}
+                    </div>
+
+                    <h5>预期结果:</h5>
+                    <div class="alert alert-info">
+                        {{ step.expected_result|linebreaks }}
+                    </div>
+
+                    {% if step.url_path %}
+                        <div class="mb-4">
+                            <a href="{{ step.url_path }}" class="btn btn-primary" target="_blank">
+                                <i class="bi bi-box-arrow-up-right me-2"></i>跳转到操作页面
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent d-flex justify-content-between">
+                    {% if prev_step %}
+                        <a href="{% url 'test_step' session.id prev_step %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>上一步
+                        </a>
+                    {% else %}
+                        <div></div>
+                    {% endif %}
+
+                    {% if next_step %}
+                        <a href="{% url 'test_step' session.id next_step %}" class="btn btn-primary">
+                            下一步<i class="bi bi-arrow-right ms-2"></i>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'complete_test' session.id %}" class="btn btn-success">
+                            完成测试<i class="bi bi-check2 ms-2"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

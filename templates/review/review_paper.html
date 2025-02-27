@@ -1,0 +1,186 @@
+<!-- templates/review/review_paper.html -->
+{% extends 'base.html' %}
+
+{% block title %}审阅稿件 - 上海理工大学学报投审稿系统{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2>审阅稿件</h2>
+            <div>
+                <a href="{{ paper.manuscript_file.url }}" target="_blank" class="btn btn-outline-primary">
+                    <i class="bi bi-download"></i> 下载论文
+                </a>
+                <a href="{% url 'reviewer_dashboard' %}" class="btn btn-outline-secondary ms-2">
+                    返回仪表板
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">稿件信息</div>
+                        <div class="card-body">
+                            <h3>{{ paper.title }}</h3>
+                            <div class="row mb-2">
+                                <div class="col-md-3 fw-bold">摘要:</div>
+                                <div class="col-md-9">{{ paper.abstract }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-3 fw-bold">关键词:</div>
+                                <div class="col-md-9">{{ paper.keywords }}</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-md-3 fw-bold">栏目:</div>
+                                <div class="col-md-9">{{ paper.category.name }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+
+                <div class="card mb-4">
+                    <div class="card-header">审稿评分</div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">请对稿件的各个方面进行评分 (1-5分，5分最高)</p>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.score_originality.id_for_label }}" class="form-label">创新性</label>
+                                {{ form.score_originality }}
+                                {% if form.score_originality.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.score_originality.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="{{ form.score_methodology.id_for_label }}" class="form-label">方法学</label>
+                                {{ form.score_methodology }}
+                                {% if form.score_methodology.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.score_methodology.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="{{ form.score_literature.id_for_label }}" class="form-label">文献引用</label>
+                                {{ form.score_literature }}
+                                {% if form.score_literature.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.score_literature.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="{{ form.score_writing.id_for_label }}" class="form-label">写作与表达</label>
+                                {{ form.score_writing }}
+                                {% if form.score_writing.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.score_writing.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">审稿意见</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="{{ form.recommendation.id_for_label }}" class="form-label">推荐决定</label>
+                            {{ form.recommendation }}
+                            {% if form.recommendation.errors %}
+                            <div class="text-danger">
+                                {% for error in form.recommendation.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if form.recommendation.help_text %}
+                            <div class="form-text">{{ form.recommendation.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.comments_to_author.id_for_label }}" class="form-label">给作者的评语</label>
+                            {{ form.comments_to_author }}
+                            {% if form.comments_to_author.errors %}
+                            <div class="text-danger">
+                                {% for error in form.comments_to_author.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if form.comments_to_author.help_text %}
+                            <div class="form-text">{{ form.comments_to_author.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.comments_to_editor.id_for_label }}" class="form-label">给编辑的评语</label>
+                            {{ form.comments_to_editor }}
+                            {% if form.comments_to_editor.errors %}
+                            <div class="text-danger">
+                                {% for error in form.comments_to_editor.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if form.comments_to_editor.help_text %}
+                            <div class="form-text">{{ form.comments_to_editor.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.review_file.id_for_label }}" class="form-label">审稿附件</label>
+                            {{ form.review_file }}
+                            {% if form.review_file.errors %}
+                            <div class="text-danger">
+                                {% for error in form.review_file.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if form.review_file.help_text %}
+                            <div class="form-text">{{ form.review_file.help_text }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <p><strong>提交前请注意：</strong></p>
+                    <ul>
+                        <li>提交后将无法修改审稿意见</li>
+                        <li>请确保您的评语客观、公正，并提供具体的改进建议</li>
+                        <li>给作者的评语将直接发送给作者，请确保语言专业、礼貌</li>
+                    </ul>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{% url 'reviewer_dashboard' %}" class="btn btn-secondary me-md-2">取消</a>
+                    <button type="submit" class="btn btn-primary">提交审稿意见</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

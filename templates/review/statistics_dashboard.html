@@ -1,0 +1,353 @@
+<!-- templates/review/statistics_dashboard.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}统计仪表板 - 上海理工大学学报投审稿系统{% endblock %}
+
+{% block extra_head %}
+<!-- 引入Chart.js库 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <h2 class="mb-4">统计仪表板</h2>
+
+    <!-- 日期范围选择 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="{{ form.start_date.id_for_label }}" class="form-label">{{ form.start_date.label }}</label>
+                    {{ form.start_date }}
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.end_date.id_for_label }}" class="form-label">{{ form.end_date.label }}</label>
+                    {{ form.end_date }}
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">应用筛选</button>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            导出数据
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'export_submissions_csv' %}?start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}">
+                                    导出稿件数据 (CSV)
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'export_reviews_csv' %}?start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}">
+                                    导出审稿数据 (CSV)
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </form>
+            <div class="mt-2">
+                <p class="text-muted">
+                    当前显示: {{ start_date|date:"Y年m月d日" }} 至 {{ end_date|date:"Y年m月d日" }} 的统计数据
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据摘要卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">总稿件数</h5>
+                    <h1 class="display-4">{{ total_submissions }}</h1>
+                    <p class="card-text">选定时间段内的稿件总数</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">接受率</h5>
+                    <h1 class="display-4">{{ acceptance_rate }}%</h1>
+                    <p class="card-text">接受稿件数: {{ accepted_papers }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">拒稿率</h5>
+                    <h1 class="display-4">{{ rejection_rate }}%</h1>
+                    <p class="card-text">拒绝稿件数: {{ rejected_papers }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-dark h-100">
+                <div class="card-body">
+                    <h5 class="card-title">平均审稿周期</h5>
+                    <h1 class="display-4">{{ avg_review_days }}</h1>
+                    <p class="card-text">天 (从接受审稿到提交)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图表区域 -->
+    <div class="row mb-4">
+        <!-- 月度稿件统计 -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">月度稿件统计</div>
+                <div class="card-body">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 栏目分布 -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">稿件栏目分布</div>
+                <div class="card-body">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- 状态分布 -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">稿件状态分布</div>
+                <div class="card-body">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 当前处理中 -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">当前处理中的稿件</div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-6 border-end">
+                            <h2 class="display-4 text-primary">{{ under_review_papers }}</h2>
+                            <p>正在审稿中的稿件</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h2 class="display-4 text-success">{{ avg_review_days }}</h2>
+                            <p>平均审稿天数</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 审稿人工作量表格 -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">审稿人工作量排名 (前10名)</div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>排名</th>
+                                    <th>审稿人</th>
+                                    <th>已完成审稿数</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reviewer in top_reviewers %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        {% if reviewer.reviewer__first_name or reviewer.reviewer__last_name %}
+                                            {{ reviewer.reviewer__first_name }} {{ reviewer.reviewer__last_name }}
+                                        {% else %}
+                                            {{ reviewer.reviewer__username }}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ reviewer.completed_reviews }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">没有审稿数据</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 设置图表颜色
+    const chartColors = [
+        'rgba(54, 162, 235, 0.7)',
+        'rgba(255, 99, 132, 0.7)',
+        'rgba(255, 206, 86, 0.7)',
+        'rgba(75, 192, 192, 0.7)',
+        'rgba(153, 102, 255, 0.7)',
+        'rgba(255, 159, 64, 0.7)',
+        'rgba(199, 199, 199, 0.7)',
+        'rgba(83, 102, 255, 0.7)',
+        'rgba(40, 159, 64, 0.7)',
+        'rgba(210, 199, 199, 0.7)',
+    ];
+
+    // 设置图表标题样式
+    const titleOptions = {
+        font: {
+            size: 16,
+            weight: 'bold'
+        }
+    };
+
+    // 月度稿件统计图
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    const monthlyChart = new Chart(monthlyCtx, {
+        type: 'line',
+        data: {
+            labels: {{ months_labels|safe }},
+            datasets: [{
+                label: '月度稿件数量',
+                data: {{ submissions_data|safe }},
+                borderColor: 'rgb(54, 162, 235)',
+                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                borderWidth: 2,
+                tension: 0.1,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: '月度稿件提交统计',
+                    ...titleOptions
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+
+    // 栏目分布图
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    const categoryChart = new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ category_labels|safe }},
+            datasets: [{
+                data: {{ category_data|safe }},
+                backgroundColor: chartColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                },
+                title: {
+                    display: true,
+                    text: '稿件栏目分布',
+                    ...titleOptions
+                }
+            }
+        }
+    });
+
+    // 状态分布图
+    const statusLabels = {
+        'SUBMITTED': '已提交',
+        'INITIAL_CHECK': '初步检查',
+        'UNDER_REVIEW': '审稿中',
+        'REVIEW_COMPLETED': '审稿完成',
+        'REVISION_REQUIRED': '需要修改',
+        'REVISED': '已修改',
+        'ACCEPTED': '已接受',
+        'REJECTED': '已拒绝',
+        'PUBLISHED': '已发表',
+        'WITHDRAWN': '已撤回'
+    };
+
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    const statusChart = new Chart(statusCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ status_labels|safe }}.map(status => statusLabels[status] || status),
+            datasets: [{
+                label: '稿件数量',
+                data: {{ status_data|safe }},
+                backgroundColor: chartColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: '稿件状态分布',
+                    ...titleOptions
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
+<!-- 在 templates/review/statistics_dashboard.html 页面底部添加 -->
+<div class="row mt-4 mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">详细报表</div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="{% url 'review_duration_analysis' %}?start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        审稿周期详细分析
+                        <span class="badge bg-primary rounded-pill">查看</span>
+                    </a>
+                    <!-- 未来可添加更多详细报表链接 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

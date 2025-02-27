@@ -1,0 +1,166 @@
+<!-- templates/testing/view_feedbacks.html -->
+{% extends 'base.html' %}
+
+{% block title %}查看测试反馈 - 上海理工大学学报投审稿系统{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-3">
+            <!-- 侧边栏 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">测试管理</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'manage_test_accounts' %}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-people me-2"></i>测试账户管理
+                        </a>
+                        <a href="{% url 'view_test_feedbacks' %}" class="list-group-item list-group-item-action active">
+                            <i class="bi bi-chat-square-text me-2"></i>测试反馈
+                        </a>
+                        <a href="{% url 'test_analytics_dashboard' %}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-bar-chart me-2"></i>测试分析
+                        </a>
+                        <a href="{% url 'generate_test_report' %}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-file-earmark-text me-2"></i>生成报告
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">用户测试反馈</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="alert alert-info">
+                                <h5>总体评分概况 (总计: {{ feedback_count }} 份反馈)</h5>
+                                <div class="row text-center">
+                                    <div class="col">
+                                        <div class="h4">{{ avg_satisfaction|floatformat:1 }}</div>
+                                        <div>总体满意度</div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="h4">{{ avg_ui|floatformat:1 }}</div>
+                                        <div>界面评分</div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="h4">{{ avg_usability|floatformat:1 }}</div>
+                                        <div>易用性评分</div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="h4">{{ avg_performance|floatformat:1 }}</div>
+                                        <div>性能评分</div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="h4">{{ avg_overall|floatformat:1 }}</div>
+                                        <div>总平均评分</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if feedbacks %}
+                        <div class="accordion" id="feedbackAccordion">
+                            {% for feedback in feedbacks %}
+                                <div class="accordion-item mb-3">
+                                    <h2 class="accordion-header" id="heading{{ feedback.id }}">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#collapse{{ feedback.id }}" aria-expanded="false"
+                                                aria-controls="collapse{{ feedback.id }}">
+                                            <div class="d-flex justify-content-between w-100 me-3">
+                                                <div>
+                                                    <span class="fw-bold">{{ feedback.test_session.scenario.name }}</span> -
+                                                    <span class="text-muted">{{ feedback.test_session.test_user.user.username }}</span>
+                                                </div>
+                                                <div>
+                                                    <span class="badge bg-primary">满意度: {{ feedback.satisfaction_rating }}/5</span>
+                                                    <span class="badge bg-info">平均: {{ feedback.average_rating|floatformat:1 }}/5</span>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="collapse{{ feedback.id }}" class="accordion-collapse collapse"
+                                         aria-labelledby="heading{{ feedback.id }}" data-bs-parent="#feedbackAccordion">
+                                        <div class="accordion-body">
+                                            <div class="row mb-3">
+                                                <div class="col-md-3">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body text-center">
+                                                            <h5 class="card-title">界面评分</h5>
+                                                            <p class="display-4">{{ feedback.ui_rating }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body text-center">
+                                                            <h5 class="card-title">易用性评分</h5>
+                                                            <p class="display-4">{{ feedback.usability_rating }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body text-center">
+                                                            <h5 class="card-title">性能评分</h5>
+                                                            <p class="display-4">{{ feedback.performance_rating }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body text-center">
+                                                            <h5 class="card-title">总体评分</h5>
+                                                            <p class="display-4">{{ feedback.satisfaction_rating }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <h5>反馈信息:</h5>
+                                                    <div class="mb-3">
+                                                        <h6>总体评价</h6>
+                                                        <p>{{ feedback.comments|default:"(未提供)"|linebreaks }}</p>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <h6>遇到的问题</h6>
+                                                        <p>{{ feedback.encountered_issues|default:"(未提供)"|linebreaks }}</p>
+                                                    </div>
+                                                    <div>
+                                                        <h6>改进建议</h6>
+                                                        <p>{{ feedback.suggestions|default:"(未提供)"|linebreaks }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mt-3">
+                                                <div class="col-md-12 text-muted text-end">
+                                                    <small>提交时间: {{ feedback.created_at|date:"Y-m-d H:i" }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center my-5">
+                            <p class="text-muted">尚未收到任何测试反馈</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

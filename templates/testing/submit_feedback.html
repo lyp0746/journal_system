@@ -1,0 +1,132 @@
+<!-- templates/testing/submit_feedback.html -->
+{% extends 'base.html' %}
+
+{% block title %}提交测试反馈 - 上海理工大学学报投审稿系统{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">提交测试反馈</h4>
+                </div>
+                <div class="card-body">
+                    <p class="mb-4">您已完成"{{ session.scenario.name }}"测试场景，请花几分钟时间提交您的反馈意见，帮助我们改进系统。</p>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label class="form-label">整体满意度评分</label>
+                            <div class="rating-buttons">
+                                {% for value, text in form.satisfaction_rating.field.choices %}
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="satisfaction_rating"
+                                               id="satisfaction_{{ value }}" value="{{ value }}" required>
+                                        <label class="form-check-label" for="satisfaction_{{ value }}">
+                                            {{ text }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">界面设计评分</label>
+                            <div class="rating-buttons">
+                                {% for value, text in form.ui_rating.field.choices %}
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="ui_rating"
+                                               id="ui_{{ value }}" value="{{ value }}" required>
+                                        <label class="form-check-label" for="ui_{{ value }}">
+                                            {{ text }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">易用性评分</label>
+                            <div class="rating-buttons">
+                                {% for value, text in form.usability_rating.field.choices %}
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="usability_rating"
+                                               id="usability_{{ value }}" value="{{ value }}" required>
+                                        <label class="form-check-label" for="usability_{{ value }}">
+                                            {{ text }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">系统性能评分</label>
+                            <div class="rating-buttons">
+                                {% for value, text in form.performance_rating.field.choices %}
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="performance_rating"
+                                               id="performance_{{ value }}" value="{{ value }}" required>
+                                        <label class="form-check-label" for="performance_{{ value }}">
+                                            {{ text }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="comments" class="form-label">总体评价</label>
+                            {{ form.comments }}
+                            <div class="form-text">请分享您对系统的总体评价</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="encountered_issues" class="form-label">遇到的问题</label>
+                            {{ form.encountered_issues }}
+                            <div class="form-text">请描述您在测试中遇到的任何问题或困难</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="suggestions" class="form-label">改进建议</label>
+                            {{ form.suggestions }}
+                            <div class="form-text">请提供您对系统的改进建议</div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                提交反馈
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .rating-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin: 0 -5px;
+    }
+
+    .rating-buttons .form-check {
+        margin: 0 5px;
+        padding: 10px 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        text-align: center;
+        flex-grow: 1;
+    }
+
+    .rating-buttons .form-check-input {
+        margin-right: 5px;
+    }
+</style>
+{% endblock %}

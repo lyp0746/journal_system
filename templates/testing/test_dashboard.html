@@ -1,0 +1,119 @@
+<!-- templates/testing/test_dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}测试仪表板 - 上海理工大学学报投审稿系统{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <h4 class="alert-heading">欢迎使用上海理工大学学报投审稿系统测试平台!</h4>
+                <p>您当前正在使用测试账户: <strong>{{ user.username }}</strong> (角色: {{ test_user.get_test_role_display }})</p>
+                <p>请按照以下场景进行系统功能测试，完成测试后提交您的反馈。感谢您的参与！</p>
+                <hr>
+                <p class="mb-0">测试账户有效期至: {{ test_user.expires_at|date:"Y-m-d H:i" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">测试场景</h5>
+                </div>
+                <div class="card-body">
+                    {% if scenarios %}
+                        <div class="row">
+                            {% for scenario in scenarios %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ scenario.name }}</h5>
+                                            <p class="card-text">{{ scenario.description }}</p>
+                                        </div>
+                                        <div class="card-footer bg-transparent">
+                                            <a href="{% url 'start_test_scenario' scenario.id %}" class="btn btn-primary">
+                                                开始测试
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center my-4">
+                            <p class="text-muted">暂无适用于您角色的测试场景</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">测试进度</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>进行中的测试:</h6>
+                        {% if active_sessions %}
+                            <ul class="list-group">
+                                {% for session in active_sessions %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span>{{ session.scenario.name }}</span>
+                                            <div class="progress mt-1" style="height: 5px;">
+                                                <div class="progress-bar" role="progressbar"
+                                                     style="width: {{ session.current_step|divisibleby:session.scenario.steps.count|default:0 }}%">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <a href="{% url 'test_step' session.id session.current_step %}" class="btn btn-sm btn-outline-primary">
+                                            继续
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">没有进行中的测试</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <h6>已完成的测试:</h6>
+                        {% if completed_sessions %}
+                            <ul class="list-group">
+                                {% for session in completed_sessions %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>{{ session.scenario.name }}</span>
+                                        <span class="badge bg-success rounded-pill">已完成</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">没有已完成的测试</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">测试指南</h5>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        <li>选择一个测试场景开始</li>
+                        <li>按照步骤说明进行操作</li>
+                        <li>完成所有步骤后提交反馈</li>
+                        <li>尝试不同的测试场景</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

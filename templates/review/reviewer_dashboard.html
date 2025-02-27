@@ -1,0 +1,213 @@
+<!-- templates/review/reviewer_dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}审稿人仪表板 - 上海理工大学学报投审稿系统{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h2 class="mb-4">审稿人仪表板</h2>
+
+    <!-- 审稿邀请 -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="m-0">待回应的审稿邀请</h4>
+        </div>
+        <div class="card-body">
+            {% if invited_reviews %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>论文标题</th>
+                                <th>栏目</th>
+                                <th>邀请时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for review in invited_reviews %}
+                            <tr>
+                                <td>{{ review.paper.title }}</td>
+                                <td>{{ review.paper.category.name }}</td>
+                                <td>{{ review.invited_at|date:"Y-m-d" }}</td>
+                                <td>
+                                    <a href="{% url 'review_invitation_response' review.id %}" class="btn btn-sm btn-primary">
+                                        回应邀请
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">当前没有待回应的审稿邀请。</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 待审稿件 -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h4 class="m-0">待审稿件</h4>
+        </div>
+        <div class="card-body">
+            {% if pending_reviews %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>论文标题</th>
+                                <th>栏目</th>
+                                <th>接受时间</th>
+                                <th>截止日期</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for review in pending_reviews %}
+                            <tr>
+                                <td>{{ review.paper.title }}</td>
+                                <td>{{ review.paper.category.name }}</td>
+                                <td>{{ review.accepted_at|date:"Y-m-d" }}</td>
+                                <td>{{ review.accepted_at|date:"Y-m-d"|add_days:14 }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'review_paper' review.id %}" class="btn btn-sm btn-success">
+                                            审阅稿件
+                                        </a>
+                                        <a href="{{ review.paper.manuscript_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            下载论文
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">当前没有待审稿件。</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 已完成的审稿 -->
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h4 class="m-0">已完成的审稿</h4>
+        </div>
+        <div class="card-body">
+            {% if completed_reviews %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>论文标题</th>
+                                <th>栏目</th>
+                                <th>提交时间</th>
+                                <th>推荐决定</th>
+                                <th>查看详情</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for review in completed_reviews %}
+                            <tr>
+                                <td>{{ review.paper.title }}</td>
+                                <td>{{ review.paper.category.name }}</td>
+                                <td>{{ review.submitted_at|date:"Y-m-d" }}</td>
+                                <td>
+                                    <span class="badge
+                                    {% if review.recommendation == 'ACCEPT' %}bg-success
+                                    {% elif review.recommendation == 'MINOR_REVISION' %}bg-info
+                                    {% elif review.recommendation == 'MAJOR_REVISION' %}bg-warning
+                                    {% elif review.recommendation == 'REJECT' %}bg-danger
+                                    {% else %}bg-secondary
+                                    {% endif %}">
+                                        {{ review.get_recommendation_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#reviewModal{{ review.id }}">
+                                        查看审稿
+                                    </button>
+
+                                    <!-- 审稿详情模态框 -->
+                                    <div class="modal fade" id="reviewModal{{ review.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">审稿详情</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <h6>论文: {{ review.paper.title }}</h6>
+                                                    <p class="text-muted">提交时间: {{ review.submitted_at|date:"Y-m-d H:i" }}</p>
+
+                                                    <div class="mb-3">
+                                                        <h6>推荐决定:</h6>
+                                                        <p>
+                                                            <span class="badge
+                                                            {% if review.recommendation == 'ACCEPT' %}bg-success
+                                                            {% elif review.recommendation == 'MINOR_REVISION' %}bg-info
+                                                            {% elif review.recommendation == 'MAJOR_REVISION' %}bg-warning
+                                                            {% elif review.recommendation == 'REJECT' %}bg-danger
+                                                            {% else %}bg-secondary
+                                                            {% endif %}">
+                                                                {{ review.get_recommendation_display }}
+                                                            </span>
+                                                        </p>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <h6>给作者的评语:</h6>
+                                                        <pre class="p-3 bg-light">{{ review.comments_to_author }}</pre>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <h6>给编辑的评语:</h6>
+                                                        <pre class="p-3 bg-light">{{ review.comments_to_editor }}</pre>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <h6>评分:</h6>
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <p>创新性: {{ review.score_originality }}/5</p>
+                                                                <p>方法学: {{ review.score_methodology }}/5</p>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <p>写作与表达: {{ review.score_writing }}/5</p>
+                                                                <p>文献引用: {{ review.score_literature }}/5</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {% if review.review_file %}
+                                                    <div>
+                                                        <h6>附件:</h6>
+                                                        <a href="{{ review.review_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                            下载审稿附件
+                                                        </a>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">您还没有完成任何审稿。</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

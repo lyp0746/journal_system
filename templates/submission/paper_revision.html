@@ -1,0 +1,75 @@
+<!-- templates/submission/paper_revision.html -->
+{% extends 'base.html' %}
+
+{% block title %}提交修改稿 - 上海理工大学学报投审稿系统{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <h2>论文修改</h2>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-4">
+                    <h5>稿件信息</h5>
+                    <p><strong>标题:</strong> {{ paper.title }}</p>
+                    <p><strong>当前状态:</strong> {{ paper.get_status_display }}</p>
+                </div>
+
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="{{ form.manuscript_file.id_for_label }}" class="form-label">修改后的论文文件</label>
+                        {{ form.manuscript_file }}
+                        {% if form.manuscript_file.errors %}
+                        <div class="text-danger">
+                            {% for error in form.manuscript_file.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% if form.manuscript_file.help_text %}
+                        <div class="form-text">{{ form.manuscript_file.help_text }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.response_to_reviewers.id_for_label }}" class="form-label">对审稿意见的回应</label>
+                        {{ form.response_to_reviewers }}
+                        {% if form.response_to_reviewers.errors %}
+                        <div class="text-danger">
+                            {% for error in form.response_to_reviewers.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-text">请针对每位审稿人的意见逐条回应，说明您的修改</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.cover_letter.id_for_label }}" class="form-label">修改说明</label>
+                        {{ form.cover_letter }}
+                        {% if form.cover_letter.errors %}
+                        <div class="text-danger">
+                            {% for error in form.cover_letter.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% if form.cover_letter.help_text %}
+                        <div class="form-text">{{ form.cover_letter.help_text }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'submission_detail' paper.id %}" class="btn btn-secondary me-md-2">取消</a>
+                        <button type="submit" class="btn btn-primary">提交修改</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

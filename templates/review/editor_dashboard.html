@@ -1,0 +1,217 @@
+<!-- templates/review/editor_dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}编辑仪表板 - 上海理工大学学报投审稿系统{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h2 class="mb-4">编辑仪表板</h2>
+
+    <ul class="nav nav-tabs mb-4" id="editorTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="new-tab" data-bs-toggle="tab" data-bs-target="#new" type="button" role="tab" aria-controls="new" aria-selected="true">
+                新提交稿件 <span class="badge bg-primary">{{ new_submissions.count }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="review-tab" data-bs-toggle="tab" data-bs-target="#review" type="button" role="tab" aria-controls="review" aria-selected="false">
+                审稿中 <span class="badge bg-warning">{{ under_review.count }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="decision-tab" data-bs-toggle="tab" data-bs-target="#decision" type="button" role="tab" aria-controls="decision" aria-selected="false">
+                需要决定 <span class="badge bg-danger">{{ need_decision.count }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="decided-tab" data-bs-toggle="tab" data-bs-target="#decided" type="button" role="tab" aria-controls="decided" aria-selected="false">
+                已决定
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="editorTabsContent">
+        <!-- 新提交稿件 -->
+        <div class="tab-pane fade show active" id="new" role="tabpanel" aria-labelledby="new-tab">
+            {% if new_submissions %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>标题</th>
+                                <th>作者</th>
+                                <th>栏目</th>
+                                <th>提交时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for paper in new_submissions %}
+                            <tr>
+                                <td>{{ paper.title }}</td>
+                                <td>{{ paper.author.get_full_name }}</td>
+                                <td>{{ paper.category.name }}</td>
+                                <td>{{ paper.submitted_at|date:"Y-m-d" }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'submission_detail' paper.id %}" class="btn btn-sm btn-outline-primary">查看详情</a>
+                                        <a href="{% url 'assign_reviewers' paper.id %}" class="btn btn-sm btn-primary">分配审稿人</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">没有新提交的稿件。</div>
+            {% endif %}
+        </div>
+
+        <!-- 审稿中 -->
+        <div class="tab-pane fade" id="review" role="tabpanel" aria-labelledby="review-tab">
+            {% if under_review %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>标题</th>
+                                <th>作者</th>
+                                <th>栏目</th>
+                                <th>状态</th>
+                                <th>审稿进度</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for paper in under_review %}
+                            <tr>
+                                <td>{{ paper.title }}</td>
+                                <td>{{ paper.author.get_full_name }}</td>
+                                <td>{{ paper.category.name }}</td>
+                                <td>
+                                    <span class="badge
+                                    {% if paper.status == 'INITIAL_CHECK' %}bg-info
+                                    {% elif paper.status == 'UNDER_REVIEW' %}bg-warning
+                                    {% elif paper.status == 'REVIEW_COMPLETED' %}bg-success
+                                    {% endif %}">
+                                        {{ paper.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% with total_reviews=paper.reviews.count completed_reviews=paper.reviews.completed.count %}
+                                    {% if total_reviews > 0 %}
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ completed_reviews|multiply:100|divide:total_reviews }}%">
+                                            {{ completed_reviews }}/{{ total_reviews }}
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-muted">尚未分配审稿人</span>
+                                    {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'submission_detail' paper.id %}" class="btn btn-sm btn-outline-primary">查看详情</a>
+                                        <a href="{% url 'assign_reviewers' paper.id %}" class="btn btn-sm btn-outline-warning">管理审稿人</a>
+                                        {% if paper.status == 'REVIEW_COMPLETED' %}
+                                        <a href="{% url 'editor_decision' paper.id %}" class="btn btn-sm btn-success">做出决定</a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">没有正在审稿中的稿件。</div>
+            {% endif %}
+        </div>
+
+        <!-- 需要决定 -->
+        <div class="tab-pane fade" id="decision" role="tabpanel" aria-labelledby="decision-tab">
+            {% if need_decision %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>标题</th>
+                                <th>作者</th>
+                                <th>栏目</th>
+                                <th>审稿完成时间</th>
+                                <th>审稿人数</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for paper in need_decision %}
+                            <tr>
+                                <td>{{ paper.title }}</td>
+                                <td>{{ paper.author.get_full_name }}</td>
+                                <td>{{ paper.category.name }}</td>
+                                <td>{{ paper.last_updated|date:"Y-m-d" }}</td>
+                                <td>{{ paper.reviews.filter(is_completed=True).count }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'submission_detail' paper.id %}" class="btn btn-sm btn-outline-primary">查看详情</a>
+                                        <a href="{% url 'editor_decision' paper.id %}" class="btn btn-sm btn-success">做出决定</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">没有需要做出决定的稿件。</div>
+            {% endif %}
+        </div>
+
+        <!-- 已决定 -->
+        <div class="tab-pane fade" id="decided" role="tabpanel" aria-labelledby="decided-tab">
+            {% if decided %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>标题</th>
+                                <th>作者</th>
+                                <th>栏目</th>
+                                <th>状态</th>
+                                <th>决定时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for paper in decided %}
+                            <tr>
+                                <td>{{ paper.title }}</td>
+                                <td>{{ paper.author.get_full_name }}</td>
+                                <td>{{ paper.category.name }}</td>
+                                <td>
+                                    <span class="badge
+                                    {% if paper.status == 'ACCEPTED' %}bg-success
+                                    {% elif paper.status == 'REJECTED' %}bg-danger
+                                    {% elif paper.status == 'REVISION_REQUIRED' %}bg-warning
+                                    {% endif %}">
+                                        {{ paper.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ paper.last_updated|date:"Y-m-d" }}</td>
+                                <td>
+                                    <a href="{% url 'submission_detail' paper.id %}" class="btn btn-sm btn-outline-primary">查看详情</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">没有已做出决定的稿件。</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+<!-- templates/submission/submission_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}我的投稿 - 上海理工大学学报投审稿系统{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2>我的投稿</h2>
+        <a href="{% url 'paper_submission' %}" class="btn btn-primary">新投稿</a>
+    </div>
+    <div class="card-body">
+        {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>标题</th>
+                            <th>投稿时间</th>
+                            <th>所属栏目</th>
+                            <th>状态</th>
+                            <th>最后更新</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for paper in page_obj %}
+                        <tr>
+                            <td>{{ paper.title }}</td>
+                            <td>{{ paper.submitted_at|date:"Y-m-d" }}</td>
+                            <td>{{ paper.category.name }}</td>
+                            <td>
+                                <span class="badge
+                                {% if paper.status == 'DRAFT' %}bg-secondary
+                                {% elif paper.status == 'SUBMITTED' %}bg-primary
+                                {% elif paper.status == 'INITIAL_CHECK' %}bg-info
+                                {% elif paper.status == 'UNDER_REVIEW' %}bg-warning
+                                {% elif paper.status == 'REVISION_REQUIRED' %}bg-warning
+                                {% elif paper.status == 'REJECTED' %}bg-danger
+                                {% elif paper.status == 'ACCEPTED' %}bg-success
+                                {% elif paper.status == 'PUBLISHED' %}bg-success
+                                {% endif %}
+                                ">
+                                    {{ paper.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ paper.last_updated|date:"Y-m-d" }}</td>
+                            <td>
+                                <a href="{% url 'submission_detail' paper.id %}" class="btn btn-sm btn-outline-primary">查看</a>
+                                {% if paper.status == 'REVISION_REQUIRED' %}
+                                <a href="{% url 'paper_revision' paper.id %}" class="btn btn-sm btn-outline-warning">修改</a>
+                                {% endif %}
+                                {% if paper.status not in 'REJECTED,ACCEPTED,PUBLISHED' %}
+                                <a href="{% url 'withdraw_submission' paper.id %}" class="btn btn-sm btn-outline-danger">撤回</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页 -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">&laquo; 首页</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">上一页</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo; 首页</span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">上一页</span>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">下一页</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">末页 &raquo;</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">下一页</span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">末页 &raquo;</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+        {% else %}
+            <div class="alert alert-info">
+                <p>您还没有投稿记录。</p>
+                <a href="{% url 'paper_submission' %}" class="btn btn-primary">立即投稿</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

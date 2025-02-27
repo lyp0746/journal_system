@@ -1,0 +1,193 @@
+<!-- templates/review/editor_decision.html -->
+{% extends 'base.html' %}
+
+{% block title %}编辑决定 - 上海理工大学学报投审稿系统{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2>编辑决定</h2>
+                <a href="{% url 'submission_detail' paper.id %}" class="btn btn-outline-secondary">返回稿件详情</a>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-4">
+                    <h5>稿件信息</h5>
+                    <p><strong>标题:</strong> {{ paper.title }}</p>
+                    <p><strong>栏目:</strong> {{ paper.category.name }}</p>
+                    <p><strong>作者:</strong> {{ paper.author.get_full_name }}</p>
+                    <p><strong>状态:</strong> {{ paper.get_status_display }}</p>
+                </div>
+
+                <!-- 审稿意见摘要 -->
+                <div class="card mb-4">
+                    <div class="card-header">审稿意见摘要</div>
+                    <div class="card-body">
+                        {% if reviews %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>审稿人</th>
+                                            <th>推荐决定</th>
+                                            <th>创新性</th>
+                                            <th>方法学</th>
+                                            <th>文献引用</th>
+                                            <th>写作表达</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for review in reviews %}
+                                        <tr>
+                                            <td>审稿人 {{ forloop.counter }}</td>
+                                            <td>
+                                                <span class="badge
+                                                {% if review.recommendation == 'ACCEPT' %}bg-success
+                                                {% elif review.recommendation == 'MINOR_REVISION' %}bg-info
+                                                {% elif review.recommendation == 'MAJOR_REVISION' %}bg-warning
+                                                {% elif review.recommendation == 'REJECT' %}bg-danger
+                                                {% else %}bg-secondary
+                                                {% endif %}">
+                                                    {{ review.get_recommendation_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ review.score_originality }}/5</td>
+                                            <td>{{ review.score_methodology }}/5</td>
+                                            <td>{{ review.score_literature }}/5</td>
+                                            <td>{{ review.score_writing }}/5</td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reviewModal{{ review.id }}">
+                                                    查看详情
+                                                </button>
+
+                                                <!-- 审稿详情模态框 -->
+                                                <div class="modal fade" id="reviewModal{{ review.id }}" tabindex="-1" aria-hidden="true">
+                                                    <div class="modal-dialog modal-lg">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">审稿详情 - 审稿人 {{ forloop.counter }}</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="mb-3">
+                                                                    <h6>推荐决定:</h6>
+                                                                    <p>
+                                                                        <span class="badge
+                                                                        {% if review.recommendation == 'ACCEPT' %}bg-success
+                                                                        {% elif review.recommendation == 'MINOR_REVISION' %}bg-info
+                                                                        {% elif review.recommendation == 'MAJOR_REVISION' %}bg-warning
+                                                                        {% elif review.recommendation == 'REJECT' %}bg-danger
+                                                                        {% else %}bg-secondary
+                                                                        {% endif %}">
+                                                                            {{ review.get_recommendation_display }}
+                                                                        </span>
+                                                                    </p>
+                                                                </div>
+
+                                                                <div class="mb-3">
+                                                                    <h6>给作者的评语:</h6>
+                                                                    <pre class="p-3 bg-light">{{ review.comments_to_author }}</pre>
+                                                                </div>
+
+                                                                <div class="mb-3">
+                                                                    <h6>给编辑的评语:</h6>
+                                                                    <pre class="p-3 bg-light">{{ review.comments_to_editor }}</pre>
+                                                                </div>
+
+                                                                <div class="mb-3">
+                                                                    <h6>评分:</h6>
+                                                                    <div class="row">
+                                                                        <div class="col-md-6">
+                                                                            <p>创新性: {{ review.score_originality }}/5</p>
+                                                                            <p>方法学: {{ review.score_methodology }}/5</p>
+                                                                        </div>
+                                                                        <div class="col-md-6">
+                                                                            <p>写作与表达: {{ review.score_writing }}/5</p>
+                                                                            <p>文献引用: {{ review.score_literature }}/5</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                {% if review.review_file %}
+                                                                <div>
+                                                                    <h6>附件:</h6>
+                                                                    <a href="{{ review.review_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                                        下载审稿附件
+                                                                    </a>
+                                                                </div>
+                                                                {% endif %}
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <p>尚无审稿意见，无法做出决定。</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 编辑决定 -->
+                {% if reviews %}
+                <div class="card">
+                    <div class="card-header">做出决定</div>
+                    <div class="card-body">
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+
+                            <div class="mb-3">
+                                <label for="{{ form.decision.id_for_label }}" class="form-label">决定</label>
+                                {{ form.decision }}
+                                {% if form.decision.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.decision.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.comments.id_for_label }}" class="form-label">给作者的评语与建议</label>
+                                {{ form.comments }}
+                                {% if form.comments.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.comments.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                {% if form.comments.help_text %}
+                                <div class="form-text">{{ form.comments.help_text }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="alert alert-warning">
+                                <p><strong>请注意：</strong> 提交决定后，系统将自动更新稿件状态并通知作者。请确保您的决定是公正的，并基于审稿人的意见。</p>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="{% url 'submission_detail' paper.id %}" class="btn btn-secondary me-md-2">取消</a>
+                                <button type="submit" class="btn btn-primary">提交决定</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

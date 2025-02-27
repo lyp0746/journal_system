@@ -1,0 +1,104 @@
+<!-- templates/testing/manage_test_accounts.html -->
+{% extends 'base.html' %}
+
+{% block title %}管理测试账户 - 上海理工大学学报投审稿系统{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-3">
+            <!-- 侧边栏 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">测试管理</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'manage_test_accounts' %}" class="list-group-item list-group-item-action active">
+                            <i class="bi bi-people me-2"></i>测试账户管理
+                        </a>
+                        <a href="{% url 'view_test_feedbacks' %}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-chat-square-text me-2"></i>测试反馈
+                        </a>
+                        <a href="{% url 'test_analytics_dashboard' %}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-bar-chart me-2"></i>测试分析
+                        </a>
+                        <a href="{% url 'generate_test_report' %}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-file-earmark-text me-2"></i>生成报告
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="h5 mb-0">测试账户管理</h2>
+                    <a href="{% url 'create_test_account' %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus"></i> 创建测试账户
+                    </a>
+                </div>
+
+                <div class="card-body">
+                    {% if test_users %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>用户名</th>
+                                        <th>测试角色</th>
+                                        <th>测试场景</th>
+                                        <th>创建时间</th>
+                                        <th>过期时间</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for test_user in test_users %}
+                                        <tr>
+                                            <td>{{ test_user.user.username }}</td>
+                                            <td>{{ test_user.get_test_role_display }}</td>
+                                            <td>{{ test_user.test_scenario|default:"--" }}</td>
+                                            <td>{{ test_user.created_at|date:"Y-m-d H:i" }}</td>
+                                            <td>{{ test_user.expires_at|date:"Y-m-d H:i" }}</td>
+                                            <td>
+                                                {% if test_user.is_expired %}
+                                                    <span class="badge bg-danger">已过期</span>
+                                                {% else %}
+                                                    <span class="badge bg-success">有效</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{% url 'view_test_account' test_user.id %}" class="btn btn-info">
+                                                        查看
+                                                    </a>
+                                                    <a href="{% url 'extend_test_account' test_user.id %}" class="btn btn-success">
+                                                        延期
+                                                    </a>
+                                                    <a href="{% url 'delete_test_account' test_user.id %}" class="btn btn-danger">
+                                                        删除
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center my-5">
+                            <p class="text-muted">没有测试账户数据</p>
+                            <a href="{% url 'create_test_account' %}" class="btn btn-primary">
+                                创建第一个测试账户
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
